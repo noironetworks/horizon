@@ -59,6 +59,13 @@ class DatabasePanels(horizon.PanelGroup):
               'database_backups',)
 
 
+class GroupPolicyPanels(horizon.PanelGroup):
+    name = _("Group Policy")
+    slug = "group_policy"
+    panels = ('endpoint_groups',
+              'contracts')
+
+
 class Project(horizon.Dashboard):
     name = _("Project")
     slug = "project"
@@ -67,7 +74,8 @@ class Project(horizon.Dashboard):
         NetworkPanels,
         ObjectStorePanels,
         OrchestrationPanels,
-        DatabasePanels,)
+        DatabasePanels,
+        GroupPolicyPanels)
     default_panel = 'overview'
     supports_tenants = True
 

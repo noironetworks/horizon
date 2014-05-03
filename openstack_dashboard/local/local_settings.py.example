@@ -176,6 +176,7 @@ OPENSTACK_NEUTRON_NETWORK = {
     # profile_support can be turned on if needed.
     'profile_support': None,
     #'profile_support': 'cisco',
+    'enable_group_policy': False,
 }
 
 # The OPENSTACK_IMAGE_BACKEND settings can be used to customize features
