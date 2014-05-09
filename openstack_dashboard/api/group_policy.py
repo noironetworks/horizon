@@ -39,12 +39,15 @@ class Contract(neutron.NeutronAPIDictWrapper):
 
 
 def epg_create(request, **kwargs):
-    pass
-
+    body = {'endpoint_group': kwargs}
+    epg = neutronclient(request).create_endpoint_group(
+        body).get('endpoint_group')
+    return EPG(epg)
 
 def epg_list(request, **kwargs):
-    return []
-
+    epgs = neutronclient(request).list_endpoint_groups(
+        **kwargs).get('endpoint_groups')
+    return [EPG(epg) for epg in epgs]
 
 def epg_get(request, epg_id):
     return {}

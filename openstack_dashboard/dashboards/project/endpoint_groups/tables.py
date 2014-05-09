@@ -12,6 +12,7 @@
 #
 # @author: Ronak Shah
 
+from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
 from horizon import tables
@@ -22,12 +23,11 @@ class UpdateEPGLink(tables.LinkAction):
     verbose_name = _("Edit EPG")
     classes = ("ajax-modal", "btn-update",)
 
-    '''
     def get_link_url(self, epg):
-        base_url = reverse("horizon:project:endpoint_groups:addepg",
+        base_url = reverse("horizon:project:endpoint_groups:updateepg",
                            kwargs={'epg_id': epg.id})
         return base_url
-    '''
+
 
 class DeleteEPGLink(tables.DeleteAction):
     name = "deleteepg"
@@ -46,7 +46,8 @@ class AddEPGLink(tables.LinkAction):
 
 class EPGsTable(tables.DataTable):
     name = tables.Column("name",
-                         verbose_name=_("Name"))
+                         verbose_name=_("Name"),
+                         link="horizon:project:endpoint_groups:epgdetails")
 
     class Meta:
         name = "epgstable"

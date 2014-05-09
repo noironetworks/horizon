@@ -27,8 +27,8 @@ class SelectContractAction(workflows.Action):
         required=False,
         help_text=_("Choose a contract for an EPG."))
     produce_or_consume = forms.ChoiceField(
-        label=_("Produce/Consume"),
-        choices=[('produce', _('PRODUCE')),
+        label=_("Provide/Consume"),
+        choices=[('provide', _('PROVIDE')),
                  ('consume', _('CONSUME')),])
 
     class Meta:
@@ -58,7 +58,7 @@ class SelectContractAction(workflows.Action):
 
 class SelectContractStep(workflows.Step):
     action_class = SelectContractAction
-    contributes = ("contracts",)
+    contributes = ("provided_contracts",)
 
     def contribute(self, data, context):
         if data:

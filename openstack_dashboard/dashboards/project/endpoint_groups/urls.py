@@ -21,4 +21,8 @@ from openstack_dashboard.dashboards.project.endpoint_groups import views
 urlpatterns = patterns(
     '',
     url(r'^$', views.IndexView.as_view(), name='index'),
-    url(r'^addepg$', views.AddEPGView.as_view(), name='addepg'),)
+    url(r'^addepg$', views.AddEPGView.as_view(), name='addepg'),
+    url(r'^updateepg/(?P<epg_id>[^/]+)/$',
+        views.EPGDetailsView.as_view(), name='updateepg'),
+    url(r'^epg/(?P<epg_id>[^/]+)/$',
+        views.EPGDetailsView.as_view(), name='epgdetails'),)

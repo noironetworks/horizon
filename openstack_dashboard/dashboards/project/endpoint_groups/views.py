@@ -33,3 +33,8 @@ class IndexView(tabs.TabView):
 class AddEPGView(workflows.WorkflowView):
     workflow_class = AddEPG
     template_name = "project/endpoint_groups/addepg.html"
+
+
+class EPGDetailsView(tabs.TabView):
+    #tab_group_class = (EPGDetailsTabs)
+    template_name = 'project/endpoint_groups/details_tabs.html'
