@@ -17,6 +17,26 @@ from django.utils.translation import ugettext_lazy as _
 from horizon import tables
 
 
+class UpdateEPGLink(tables.LinkAction):
+    name = "updateepg"
+    verbose_name = _("Edit EPG")
+    classes = ("ajax-modal", "btn-update",)
+
+    '''
+    def get_link_url(self, epg):
+        base_url = reverse("horizon:project:endpoint_groups:addepg",
+                           kwargs={'epg_id': epg.id})
+        return base_url
+    '''
+
+class DeleteEPGLink(tables.DeleteAction):
+    name = "deleteepg"
+    action_present = _("Delete")
+    action_past = _("Scheduled deletion of %(data_type)s")
+    data_type_singular = _("EPG")
+    data_type_plural = _("EPGs")
+
+
 class AddEPGLink(tables.LinkAction):
     name = "addepg"
     verbose_name = _("Create EPG")
@@ -31,5 +51,5 @@ class EPGsTable(tables.DataTable):
     class Meta:
         name = "epgstable"
         verbose_name = _("EPGs")
-        table_actions = (AddEPGLink,)
-        #row_actions = (UpdateFirewallLink, DeleteFirewallLink)
+        table_actions = (AddEPGLink, DeleteEPGLink)
+        row_actions = (UpdateEPGLink, DeleteEPGLink)

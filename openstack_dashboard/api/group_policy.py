@@ -76,3 +76,44 @@ def contract_delete(request, contract_id):
 
 def contract_update(request, contract_id, **kwargs):
     return {}
+
+
+def policyrule_create(request, **kwargs):
+    pass
+
+
+def policyrule_list(request, **kwargs):
+    return []
+
+
+def policyrule_get(request, pr_id):
+    return {}
+
+
+def policyrule_delete(request, pr_id):
+    pass
+
+
+def policyrule_update(request, pr_id, **kwargs):
+    return {}
+
+
+def policyclassifier_create(request, **kwargs):
+    pass
+
+
+def policyclassifier_list(request, **kwargs):
+    return []
+
+
+def policyclassifier_get(request, pc_id):
+    return {}
+
+
+def policyclassifier_delete(request, pc_id):
+    pass
+
+
+def policyclassifier_update(request, pc_id, **kwargs):
+    return {}
+

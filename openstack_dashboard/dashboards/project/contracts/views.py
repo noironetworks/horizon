@@ -23,7 +23,8 @@ from openstack_dashboard.dashboards.project.contracts \
 ContractTabs = contract_tabs.ContractTabs
 
 AddContract = contract_workflows.AddContract
-
+AddPolicyRule = contract_workflows.AddPolicyRule
+AddPolicyClassifier = contract_workflows.AddPolicyClassifier
 
 class IndexView(tabs.TabView):
     tab_group_class = (ContractTabs)
@@ -33,3 +34,13 @@ class IndexView(tabs.TabView):
 class AddContractView(workflows.WorkflowView):
     workflow_class = AddContract
     template_name = "project/contracts/addcontract.html"
+
+
+class AddPolicyRuleView(workflows.WorkflowView):
+    workflow_class = AddPolicyRule
+    template_name = "project/contracts/addpolicyrule.html"
+
+
+class AddPolicyClassifierView(workflows.WorkflowView):
+    workflow_class = AddPolicyClassifier
+    template_name = "project/contracts/addpolicyclassifier.html"

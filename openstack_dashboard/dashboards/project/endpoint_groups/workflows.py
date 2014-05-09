@@ -21,6 +21,54 @@ from horizon import workflows
 from openstack_dashboard import api
 
 
+class SelectContractAction(workflows.Action):
+    contract = forms.ChoiceField(
+        label=_("Contract"),
+        required=False,
+        help_text=_("Choose a contract for an EPG."))
+    produce_or_consume = forms.ChoiceField(
+        label=_("Produce/Consume"),
+        choices=[('produce', _('PRODUCE')),
+                 ('consume', _('CONSUME')),])
+
+    class Meta:
+        name = _("Contracts")
+        help_text = _("Select contract for EPG.")
+
+    def populate_contract_choices(self, request, context):
+        try:
+            tenant_id = self.request.user.tenant_id
+            contracts = api.group_policy.contract_list(request,
+                tenant_id=tenant_id)
+            for c in contracts:
+                c.set_id_as_name_if_empty()
+            contracts = sorted(contracts,
+                           key=lambda rule: rule.name)
+            contract_list = [(c.id, c.name) for c in contracts]
+        except Exception as e:
+            contract_list = []
+            exceptions.handle(request,
+                              _('Unable to retrieve contracts (%(error)s).')
+                              % {'error': str(e)})
+        # TODO - Remove this
+        contract_list = [('contract-uuid1', 'contract-1'), 
+                           ('contract-uuid2', 'contract-2')]
+        return contract_list
+
+
+class SelectContractStep(workflows.Step):
+    action_class = SelectContractAction
+    contributes = ("contracts",)
+
+    def contribute(self, data, context):
+        if data:
+            contracts = self.workflow.request.POST.getlist(
+                "contract")
+            if contracts:
+                contracts = [c for c in contracts if c != '']
+                context['contracts'] = contracts
+            return context
+
 class AddEPGAction(workflows.Action):
     name = forms.CharField(max_length=80,
                            label=_("Name"),
@@ -53,7 +101,8 @@ class AddEPG(workflows.Workflow):
     success_message = _('Create EPG "%s".')
     failure_message = _('Unable to create EPG "%s".')
     success_url = "horizon:project:endpoint_groups:index"
-    default_steps = (AddEPGStep,)
+    default_steps = (AddEPGStep,
+                     SelectContractStep)
 
     def format_status_message(self, message):
         return message % self.context.get('name')

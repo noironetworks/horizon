@@ -21,4 +21,7 @@ from openstack_dashboard.dashboards.project.contracts import views
 urlpatterns = patterns(
     '',
     url(r'^$', views.IndexView.as_view(), name='index'),
-    url(r'^addcontract$', views.AddContractView.as_view(), name='addcontract'),)
+    url(r'^addcontract$', views.AddContractView.as_view(), name='addcontract'),
+    url(r'^addpolicyrule$', views.AddPolicyRuleView.as_view(), name='addpolicyrule'),
+    url(r'^addpolicyclassifier$', views.AddPolicyClassifierView.as_view(),
+        name='addpolicyclassifier'),)

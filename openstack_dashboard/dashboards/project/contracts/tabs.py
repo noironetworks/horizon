@@ -20,6 +20,79 @@ from openstack_dashboard import api
 from openstack_dashboard.dashboards.project.contracts import tables
 
 ContractsTable = tables.ContractsTable
+PolicyRulesTable = tables.PolicyRulesTable
+PolicyClassifiersTable = tables.PolicyClassifiersTable
+#PolicyActionsTable = tables.PolicyActionsTable
+
+'''
+class PolicyActionsTab(tabs.Tabletab):
+    table_classes(PolicyActionsTable,)
+    name = _("PolicyActions")
+    slug = "policyactions"
+    template_name = "horizon/common/_detail_table.html"
+
+    def get_policyactionstable_data(self):
+        try:
+            tenant_id = self.request.user.tenant_id
+            actions = api.group_policy.policyaction_list(
+                self.tab_group.request,
+                tenant_id=tenant_id)
+        except Exception:
+            actions = []
+            exceptions.handle(self.tab_group.request,
+                              _('Unable to retrieve actions list.'))
+
+        for action in actions:
+            action.set_id_as_name_if_empty()
+
+        return actions
+'''
+
+
+class PolicyClassifiersTab(tabs.TableTab):
+    table_classes = (PolicyClassifiersTable,)
+    name = _("PolicyClassifiers")
+    slug = "policyclassifiers"
+    template_name = "horizon/common/_detail_table.html"
+
+    def get_policyclassifierstable_data(self):
+        try:
+            tenant_id = self.request.user.tenant_id
+            classifiers = api.group_policy.policyclassifier_list(
+                self.tab_group.request,
+                tenant_id=tenant_id)
+        except Exception:
+            classifiers = []
+            exceptions.handle(self.tab_group.request,
+                              _('Unable to retrieve classifier list.'))
+
+        for classifier in classifiers:
+            classifier.set_id_as_name_if_empty()
+
+        return classifiers
+
+
+class PolicyRulesTab(tabs.TableTab):
+    table_classes = (PolicyRulesTable,)
+    name = _("PolicyRules")
+    slug = "policyrules"
+    template_name = "horizon/common/_detail_table.html"
+
+    def get_policyrulestable_data(self):
+        try:
+            tenant_id = self.request.user.tenant_id
+            policy_rules = api.group_policy.policyrule_list(
+                self.tab_group.request,
+                tenant_id=tenant_id)
+        except Exception:
+            policy_rules = []
+            exceptions.handle(self.tab_group.request,
+                              _('Unable to retrieve policy-rule list.'))
+
+        for rule in policy_rules:
+            rule.set_id_as_name_if_empty()
+
+        return policy_rules
 
 
 class ContractsTab(tabs.TableTab):
@@ -46,5 +119,7 @@ class ContractsTab(tabs.TableTab):
 
 class ContractTabs(tabs.TabGroup):
     slug = "contracttabs"
-    tabs = (ContractsTab,)
+    tabs = (ContractsTab,
+            PolicyRulesTab,
+            PolicyClassifiersTab,)
     sticky = True

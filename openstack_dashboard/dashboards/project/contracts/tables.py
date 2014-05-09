@@ -24,6 +24,20 @@ class AddContractLink(tables.LinkAction):
     classes = ("ajax-modal", "btn-addcontract",)
 
 
+class AddPolicyRulesLink(tables.LinkAction):
+    name = "addpolicyrules"
+    verbose_name = _("Create Policy-Rule")
+    url = "horizon:project:contracts:addpolicyrule"
+    classes = ("ajax-modal", "btn-addpolicyrule",)
+
+
+class AddPolicyClassifiersLink(tables.LinkAction):
+    name = "addpolicyclassifiers"
+    verbose_name = _("Create Policy-Classifier")
+    url = "horizon:project:contracts:addpolicyclassifier"
+    classes = ("ajax-modal", "btn-addpoliclassifier",)
+
+
 class ContractsTable(tables.DataTable):
     name = tables.Column("name",
                          verbose_name=_("Name"))
@@ -32,4 +46,26 @@ class ContractsTable(tables.DataTable):
         name = "contractstable"
         verbose_name = _("Contracts")
         table_actions = (AddContractLink,)
+        #row_actions = (UpdateFirewallLink, DeleteFirewallLink)
+
+
+class PolicyRulesTable(tables.DataTable):
+    name = tables.Column("name",
+                         verbose_name=_("Name"))
+
+    class Meta:
+        name = "policyrulestable"
+        verbose_name = _("PolicyRules")
+        table_actions = (AddPolicyRulesLink,)
+        #row_actions = (UpdateFirewallLink, DeleteFirewallLink)
+
+
+class PolicyClassifiersTable(tables.DataTable):
+    name = tables.Column("name",
+                         verbose_name=_("Name"))
+
+    class Meta:
+        name = "policyclassifierstable"
+        verbose_name = _("PolicyClassifiers")
+        table_actions = (AddPolicyClassifiersLink,)
         #row_actions = (UpdateFirewallLink, DeleteFirewallLink)
