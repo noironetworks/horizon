@@ -89,8 +89,11 @@ class SelectProvidedContractStep(workflows.Step):
             contracts = self.workflow.request.POST.getlist(
                 "contract")
             if contracts:
-                contracts = [c for c in contracts if c != '']
-                context['provided_contracts'] = contracts
+                contract_dict = {}
+                for contract in contracts:
+                    if contract != '':
+                        contract_dict[contract] = None
+                context['provided_contracts'] = contract_dict
             return context
 
 
@@ -104,8 +107,11 @@ class SelectConsumedContractStep(workflows.Step):
             contracts = self.workflow.request.POST.getlist(
                 "contract")
             if contracts:
-                contracts = [c for c in contracts if c != '']
-                context['consumed_contracts'] = contracts
+                contract_dict = {}
+                for contract in contracts:
+                    if contract != '':
+                        contract_dict[contract] = None
+                context['provided_contracts'] = contract_dict
             return context
 
 
