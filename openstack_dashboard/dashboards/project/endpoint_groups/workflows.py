@@ -21,19 +21,16 @@ from horizon import workflows
 from openstack_dashboard import api
 
 
-class SelectContractAction(workflows.Action):
-    contract = forms.ChoiceField(
+class SelectProvidedContractAction(workflows.Action):
+    contract = forms.MultipleChoiceField(
         label=_("Contract"),
         required=False,
+        widget=forms.CheckboxSelectMultiple(),
         help_text=_("Choose a contract for an EPG."))
-    produce_or_consume = forms.ChoiceField(
-        label=_("Provide/Consume"),
-        choices=[('provide', _('PROVIDE')),
-                 ('consume', _('CONSUME')),])
 
     class Meta:
-        name = _("Contracts")
-        help_text = _("Select contract for EPG.")
+        name = _("Provided Contracts")
+        help_text = _("Select provided contract for EPG.")
 
     def populate_contract_choices(self, request, context):
         try:
@@ -50,14 +47,41 @@ class SelectContractAction(workflows.Action):
             exceptions.handle(request,
                               _('Unable to retrieve contracts (%(error)s).')
                               % {'error': str(e)})
-        # TODO - Remove this
-        contract_list = [('contract-uuid1', 'contract-1'), 
-                           ('contract-uuid2', 'contract-2')]
         return contract_list
 
 
-class SelectContractStep(workflows.Step):
-    action_class = SelectContractAction
+class SelectConsumedContractAction(workflows.Action):
+    contract = forms.MultipleChoiceField(
+        label=_("Contract"),
+        required=False,
+        widget=forms.CheckboxSelectMultiple(),
+        help_text=_("Select consumed contract for EPG."))
+
+    class Meta:
+        name = _("Consumed Contracts")
+        help_text = _("Select consumed contract for EPG.")
+
+    def populate_contract_choices(self, request, context):
+        try:
+            tenant_id = self.request.user.tenant_id
+            contracts = api.group_policy.contract_list(request,
+                tenant_id=tenant_id)
+            for c in contracts:
+                c.set_id_as_name_if_empty()
+            contracts = sorted(contracts,
+                           key=lambda rule: rule.name)
+            contract_list = [(c.id, c.name) for c in contracts]
+        except Exception as e:
+            contract_list = []
+            exceptions.handle(request,
+                              _('Unable to retrieve contracts (%(error)s).')
+                              % {'error': str(e)})
+        return contract_list
+
+
+class SelectProvidedContractStep(workflows.Step):
+    action_class = SelectProvidedContractAction
+    name = _("Provided Contract")
     contributes = ("provided_contracts",)
 
     def contribute(self, data, context):
@@ -66,8 +90,24 @@ class SelectContractStep(workflows.Step):
                 "contract")
             if contracts:
                 contracts = [c for c in contracts if c != '']
-                context['contracts'] = contracts
+                context['provided_contracts'] = contracts
             return context
+
+
+class SelectConsumedContractStep(workflows.Step):
+    action_class = SelectConsumedContractAction
+    name = _("Consumed Contract")
+    contributes = ("consumed_contracts",)
+
+    def contribute(self, data, context):
+        if data:
+            contracts = self.workflow.request.POST.getlist(
+                "contract")
+            if contracts:
+                contracts = [c for c in contracts if c != '']
+                context['consumed_contracts'] = contracts
+            return context
+
 
 class AddEPGAction(workflows.Action):
     name = forms.CharField(max_length=80,
@@ -102,7 +142,9 @@ class AddEPG(workflows.Workflow):
     failure_message = _('Unable to create EPG "%s".')
     success_url = "horizon:project:endpoint_groups:index"
     default_steps = (AddEPGStep,
-                     SelectContractStep)
+                     SelectProvidedContractStep,
+                     SelectConsumedContractStep)
+    wizard = True
 
     def format_status_message(self, message):
         return message % self.context.get('name')

@@ -13,6 +13,7 @@
 #
 # @author: Ronak Shah
 
+from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
 from horizon import exceptions
@@ -23,7 +24,7 @@ from openstack_dashboard import api
 
 
 class SelectPolicyRuleAction(workflows.Action):
-    rule = forms.MultipleChoiceField(
+    policy_rules = forms.MultipleChoiceField(
         label=_("Policy Rules"),
         required=False,
         widget=forms.CheckboxSelectMultiple(),
@@ -33,7 +34,7 @@ class SelectPolicyRuleAction(workflows.Action):
         name = _("Rules")
         help_text = _("Select policy-rules for your contract.")
 
-    def populate_rule_choices(self, request, context):
+    def populate_policy_rules_choices(self, request, context):
         try:
             tenant_id = self.request.user.tenant_id
             rules = api.group_policy.policyrule_list(request,
@@ -48,8 +49,6 @@ class SelectPolicyRuleAction(workflows.Action):
             exceptions.handle(request,
                               _('Unable to retrieve rules (%(error)s).') % {
                                   'error': str(e)})
-        # TODO - Remove this
-        rule_list = [('rule-uuid1', 'rule-1'), ('rule-uuid2', 'rule-2')]
         return rule_list
 
 
@@ -59,7 +58,7 @@ class SelectPolicyRuleStep(workflows.Step):
 
     def contribute(self, data, context):
         if data:
-            rules = self.workflow.request.POST.getlist("policy_rule")
+            rules = self.workflow.request.POST.getlist("policy_rules")
             if rules:
                 rules = [r for r in rules if r != '']
                 context['policy_rules'] = rules
@@ -95,12 +94,14 @@ class AddContract(workflows.Workflow):
     slug = "addcontract"
     name = _("Create Contract")
     finalize_button_name = _("Create")
-    success_message = _('Create Contract "%s".')
+    success_message = _('Created Contract "%s".')
     failure_message = _('Unable to create Contract "%s".')
-    success_url = "horizon:project:contracts:index"
     default_steps = (AddContractStep,
                      SelectPolicyRuleStep)
     wizard = True
+
+    def get_success_url(self):
+        return reverse("horizon:project:contracts:index")
 
     def format_status_message(self, message):
         return message % self.context.get('name')
@@ -118,15 +119,13 @@ class AddContract(workflows.Workflow):
         contract = self._create_contract(request, context)
         if not contract:
             return False
-        if not context['with_policy']:
-            return True
+        return True
 
 
 class SelectPolicyClassifierAction(workflows.Action):
-    classifier = forms.MultipleChoiceField(
+    classifier = forms.ChoiceField(
         label=_("Policy Classifier"),
         required=False,
-        widget=forms.CheckboxSelectMultiple(),
         help_text=_("Create a policy with selected classifier."))
 
     class Meta:
@@ -138,24 +137,21 @@ class SelectPolicyClassifierAction(workflows.Action):
             tenant_id = self.request.user.tenant_id
             classifiers = api.group_policy.policyclassifier_list(request,
                 tenant_id=tenant_id)
-            for c in classifiers:
-                c.set_id_as_name_if_empty()
+            for classifier in classifiers:
+                classifier.set_id_as_name_if_empty()
             classifiers = sorted(classifiers,
-                           key=lambda rule: rule.name)
+                           key=lambda classifier: classifier.name)
             classifier_list = [(c.id, c.name) for c in classifiers]
         except Exception as e:
             classifier_list = []
             exceptions.handle(request,
                               _('Unable to retrieve classifiers (%(error)s).')
                               % {'error': str(e)})
-        # TODO - Remove this
-        classifier_list = [('classifier-uuid1', 'classifier-1'), 
-                           ('classifier-uuid2', 'classifier-2')]
         return classifier_list
 
 
 class SelectPolicyActionAction(workflows.Action):
-    action = forms.MultipleChoiceField(
+    actions = forms.MultipleChoiceField(
         label=_("Policy Action"),
         required=False,
         widget=forms.CheckboxSelectMultiple(),
@@ -165,24 +161,22 @@ class SelectPolicyActionAction(workflows.Action):
         name = _("actions")
         help_text = _("Select actions for your policy-rule.")
 
-    def populate_action_choices(self, request, context):
+    def populate_actions_choices(self, request, context):
         try:
             tenant_id = self.request.user.tenant_id
             actions = api.group_policy.policyaction_list(request,
                 tenant_id=tenant_id)
-            for a in actions:
-                a.set_id_as_name_if_empty()
+            action_list = [a.id for a in actions]
+            for action in actions:
+                action.set_id_as_name_if_empty()
             actions = sorted(actions,
-                           key=lambda rule: rule.name)
+                           key=lambda action: action.name)
             action_list = [(a.id, a.name) for a in actions]
         except Exception as e:
             action_list = []
             exceptions.handle(request,
                               _('Unable to retrieve actions (%(error)s).')
                               % {'error': str(e)})
-        # TODO - Remove this
-        action_list = [('action-uuid1', 'action-1'), 
-                           ('action-uuid2', 'action-2')]
         return action_list
 
 
@@ -193,7 +187,7 @@ class SelectPolicyActionStep(workflows.Step):
     def contribute(self, data, context):
         if data:
             actions = self.workflow.request.POST.getlist(
-                "policy_action")
+                "actions")
             if actions:
                 actions = [a for a in actions if a != '']
                 context['policy_actions'] = actions
@@ -202,15 +196,13 @@ class SelectPolicyActionStep(workflows.Step):
 
 class SelectPolicyClassifierStep(workflows.Step):
     action_class = SelectPolicyClassifierAction
-    contributes = ("policy_classifiers",)
+    contributes = ("policy_classifier_id",)
 
     def contribute(self, data, context):
+        context = super(SelectPolicyClassifierStep, self).contribute(data,
+                                                                     context)
         if data:
-            classifiers = self.workflow.request.POST.getlist(
-                "policy_classifier")
-            if classifiers:
-                classifiers = [c for c in classifiers if c != '']
-                context['policy_classifiers'] = classifiers
+            context['policy_classifier_id'] = data['classifier']
             return context
 
 
@@ -243,13 +235,15 @@ class AddPolicyRule(workflows.Workflow):
     slug = "addpolicyrule"
     name = _("Create Policy-Rule")
     finalize_button_name = _("Create")
-    success_message = _('Create Policy-Rule "%s".')
+    success_message = _('Created Policy-Rule "%s".')
     failure_message = _('Unable to create Policy-Rule "%s".')
-    success_url = "horizon:project:contracts:index"
     default_steps = (AddPolicyRuleStep,
-                     SelectPolicyClassifierStep,)
-#                     SelectPolicyActionStep)
+                     SelectPolicyClassifierStep,
+                     SelectPolicyActionStep)
     wizard = True
+
+    def get_success_url(self):
+        return reverse("horizon:project:contracts:index")
 
     def format_status_message(self, message):
         return message % self.context.get('name')
@@ -267,9 +261,7 @@ class AddPolicyRule(workflows.Workflow):
         policy_rule = self._create_policyrule(request, context)
         if not policy_rule:
             return False
-        if (not context['with_classifier'] and
-            not context['with_action']):
-            return True
+        return True
 
 
 class AddClassifierAction(workflows.Action):
@@ -282,35 +274,27 @@ class AddClassifierAction(workflows.Action):
                  ('udp', _('UDP')),
                  ('icmp', _('ICMP')),
                  ('any', _('ANY'))],)
-    min_port = forms.CharField(
+    port_range = forms.CharField(
         max_length=80,
-        label=_("Port Range(Min)"),
-        required=False)
-    max_port = forms.CharField(
-        max_length=80,
-        label=_("Port Range(Max)"),
+        label=_("Port/Range(min:max)"),
         required=False)
     direction = forms.ChoiceField(
         label=_("Direction"),
         choices=[('in', _('IN')),
                  ('out', _('OUT')),
                  ('bi', _('BI')),])
-    action = forms.ChoiceField(
-        label=_("Action"),
-        choices=[('allow', _('ALLOW')),
-                 ('redirect', _('REDIRECT'))],)
 
     def __init__(self, request, *args, **kwargs):
         super(AddClassifierAction, self).__init__(request, *args, **kwargs)
 
     class Meta:
-        name = _("Create Contract")
-        help_text = _("Create a new Contract")
+        name = _("Create Classifier")
+        help_text = _("Create a new Classifier")
 
 
 class AddClassifierStep(workflows.Step):
     action_class = AddClassifierAction
-    contributes = ("name", "protocol", "min_port", "max_port", "direction", "action")
+    contributes = ("name", "protocol", "port_range", "direction")
 
     def contribute(self, data, context):
         context = super(AddClassifierStep, self).contribute(data, context)
@@ -321,7 +305,7 @@ class AddPolicyClassifier(workflows.Workflow):
     slug = "addpolicyclassifier"
     name = _("Create Classifier")
     finalize_button_name = _("Create")
-    success_message = _('Create Classifier "%s".')
+    success_message = _('Created Classifier "%s".')
     failure_message = _('Unable to create Classifier "%s".')
     success_url = "horizon:project:contracts:index"
     default_steps = (AddClassifierStep,)
@@ -341,5 +325,66 @@ class AddPolicyClassifier(workflows.Workflow):
     def handle(self, request, context):
         classifier = self._create_classifer(request, context)
         if not classifier:
+            return False
+        return True
+
+
+class AddPolicyActionAction(workflows.Action):
+    name = forms.CharField(max_length=80,
+                           label=_("Name"),
+                           required=False)
+    action_type = forms.ChoiceField(
+        label=_("Action"),
+        choices=[('allow', _('ALLOW')),
+                 ('redirect', _('REDIRECT'))],)
+    action_value = forms.CharField(max_length=36,
+                           label=_("Action value"),
+                           required=False)
+
+    def __init__(self, request, *args, **kwargs):
+        super(AddPolicyActionAction, self).__init__(request, *args, **kwargs)
+
+
+    class Meta:
+        name = _("Create Action")
+        help_text = _("Create a new Action")
+
+
+class AddPolicyActionStep(workflows.Step):
+    action_class = AddPolicyActionAction
+    contributes = ("name", "action_type", "action_value")
+
+    def contribute(self, data, context):
+        context = super(AddPolicyActionStep, self).contribute(data, context)
+        if data:
+            if not context['action_value']:
+                del context['action_value']
+            return context
+
+
+class AddPolicyAction(workflows.Workflow):
+    slug = "addpolicyaction"
+    name = _("Create Action")
+    finalize_button_name = _("Create")
+    success_message = _('Created Action "%s".')
+    failure_message = _('Unable to create Action "%s".')
+    success_url = "horizon:project:contracts:index"
+    default_steps = (AddPolicyActionStep,)
+
+    def format_status_message(self, message):
+        return message % self.context.get('name')
+
+    def _create_action(self, request, context):
+        try:
+            api.group_policy.policyaction_create(request, **context)
+            return True
+        except Exception as e:
+            msg = self.format_status_message(self.failure_message) + str(e)
+            exceptions.handle(request, msg)
+            return False
+
+    def handle(self, request, context):
+        action = self._create_action(request, context)
+        if not action:
             return False
         return True

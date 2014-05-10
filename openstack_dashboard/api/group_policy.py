@@ -38,6 +38,33 @@ class Contract(neutron.NeutronAPIDictWrapper):
         return contract_dict
 
 
+class PolicyRule(neutron.NeutronAPIDictWrapper):
+    """Wrapper for neutron policy rule."""
+
+    def get_dict(self):
+        policyrule_dict = self._apidict
+        policyrule_dict['policyrule_dict_id'] = policyrule_dict['id']
+        return policyrule_dict
+
+
+class PolicyClassifier(neutron.NeutronAPIDictWrapper):
+    """Wrapper for neutron classifier."""
+
+    def get_dict(self):
+        classifier_dict = self._apidict
+        classifier_dict['classifier_id'] = classifier_dict['id']
+        return classifier_dict
+
+
+class PolicyAction(neutron.NeutronAPIDictWrapper):
+    """Wrapper for neutron action."""
+
+    def get_dict(self):
+        action_dict = self._apidict
+        action_dict['action_id'] = action_dict['id']
+        return action_dict
+
+
 def epg_create(request, **kwargs):
     body = {'endpoint_group': kwargs}
     epg = neutronclient(request).create_endpoint_group(
@@ -49,74 +76,87 @@ def epg_list(request, **kwargs):
         **kwargs).get('endpoint_groups')
     return [EPG(epg) for epg in epgs]
 
-def epg_get(request, epg_id):
-    return {}
-
-
-def epg_delete(request, epg_id):
-    pass
-
-
-def epg_update(request, epg_id, **kwargs):
-    return {}
-
-
 def contract_create(request, **kwargs):
-    pass
-
+    body = {'contract': kwargs}
+    contract = neutronclient(request).create_contract(
+        body).get('contract')
+    return Contract(contract)
 
 def contract_list(request, **kwargs):
-    return []
+    contracts = neutronclient(request).list_contracts(
+        **kwargs).get('contracts')
+    return [Contract(contract) for contract in contracts]
 
+def policyrule_create(request, **kwargs):
+    body = {'policy_rule': kwargs}
+    policy_rule = neutronclient(request).create_policy_rule(
+        body).get('policy_rule')
+    return PolicyRule(policy_rule)
+
+def policyrule_list(request, **kwargs):
+    policyrules = neutronclient(request).list_policy_rules(
+        **kwargs).get('policy_rules')
+    return [PolicyRule(pr) for pr in policyrules]
+
+def policyclassifier_create(request, **kwargs):
+    body = {'policy_classifier': kwargs}
+    classifier = neutronclient(request).create_policy_classifier(
+        body).get('policy_classifier')
+    return PolicyClassifier(classifier)
+
+def policyclassifier_list(request, **kwargs):
+    classifiers = neutronclient(request).list_policy_classifiers(
+        **kwargs).get('policy_classifiers')
+    return [PolicyClassifier(pc) for pc in classifiers]
+
+def policyaction_create(request, **kwargs):
+    body = {'policy_action': kwargs}
+    action = neutronclient(request).create_policy_action(
+        body).get('policy_action')
+    return PolicyAction(action)
+
+def policyaction_list(request, **kwargs):
+    actions = neutronclient(request).list_policy_actions(
+        **kwargs).get('policy_actions')
+    return [PolicyAction(pa) for pa in actions]
+
+def epg_get(request, epg_id):
+    epg = neutronclient(request).show_endpoint_group(
+        epg_id).get('endpoint_group')
+    return EPG(epg)
+
+def epg_delete(request, epg_id):
+    neutronclient(request).delete_endpoint_group(epg_id)
+
+def epg_update(request, epg_id, **kwargs):
+    body = {'endpoint_group': kwargs}
+    epg = neutronclient(request).update_endpoint_group(
+        epg_id, body).get('endpoint_group')
+    return EPG(epg)
 
 def contract_get(request, contract_id):
     return {}
 
-
 def contract_delete(request, contract_id):
-    pass
-
+    neutronclient(request).delete_contract(contract_id)
 
 def contract_update(request, contract_id, **kwargs):
     return {}
 
-
-def policyrule_create(request, **kwargs):
-    pass
-
-
-def policyrule_list(request, **kwargs):
-    return []
-
-
 def policyrule_get(request, pr_id):
     return {}
-
 
 def policyrule_delete(request, pr_id):
     pass
 
-
 def policyrule_update(request, pr_id, **kwargs):
     return {}
-
-
-def policyclassifier_create(request, **kwargs):
-    pass
-
-
-def policyclassifier_list(request, **kwargs):
-    return []
-
 
 def policyclassifier_get(request, pc_id):
     return {}
 
-
 def policyclassifier_delete(request, pc_id):
     pass
 
-
 def policyclassifier_update(request, pc_id, **kwargs):
     return {}
-

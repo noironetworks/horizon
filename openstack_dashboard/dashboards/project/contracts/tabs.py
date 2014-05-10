@@ -22,12 +22,12 @@ from openstack_dashboard.dashboards.project.contracts import tables
 ContractsTable = tables.ContractsTable
 PolicyRulesTable = tables.PolicyRulesTable
 PolicyClassifiersTable = tables.PolicyClassifiersTable
-#PolicyActionsTable = tables.PolicyActionsTable
+PolicyActionsTable = tables.PolicyActionsTable
 
-'''
-class PolicyActionsTab(tabs.Tabletab):
-    table_classes(PolicyActionsTable,)
-    name = _("PolicyActions")
+
+class PolicyActionsTab(tabs.TableTab):
+    table_classes = (PolicyActionsTable,)
+    name = _("Policy-Actions")
     slug = "policyactions"
     template_name = "horizon/common/_detail_table.html"
 
@@ -46,12 +46,11 @@ class PolicyActionsTab(tabs.Tabletab):
             action.set_id_as_name_if_empty()
 
         return actions
-'''
 
 
 class PolicyClassifiersTab(tabs.TableTab):
     table_classes = (PolicyClassifiersTable,)
-    name = _("PolicyClassifiers")
+    name = _("Policy-Classifiers")
     slug = "policyclassifiers"
     template_name = "horizon/common/_detail_table.html"
 
@@ -74,7 +73,7 @@ class PolicyClassifiersTab(tabs.TableTab):
 
 class PolicyRulesTab(tabs.TableTab):
     table_classes = (PolicyRulesTable,)
-    name = _("PolicyRules")
+    name = _("Policy-Rules")
     slug = "policyrules"
     template_name = "horizon/common/_detail_table.html"
 
@@ -121,5 +120,6 @@ class ContractTabs(tabs.TabGroup):
     slug = "contracttabs"
     tabs = (ContractsTab,
             PolicyRulesTab,
-            PolicyClassifiersTab,)
+            PolicyClassifiersTab,
+            PolicyActionsTab)
     sticky = True

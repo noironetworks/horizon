@@ -25,6 +25,7 @@ ContractTabs = contract_tabs.ContractTabs
 AddContract = contract_workflows.AddContract
 AddPolicyRule = contract_workflows.AddPolicyRule
 AddPolicyClassifier = contract_workflows.AddPolicyClassifier
+AddPolicyAction = contract_workflows.AddPolicyAction
 
 class IndexView(tabs.TabView):
     tab_group_class = (ContractTabs)
@@ -44,3 +45,28 @@ class AddPolicyRuleView(workflows.WorkflowView):
 class AddPolicyClassifierView(workflows.WorkflowView):
     workflow_class = AddPolicyClassifier
     template_name = "project/contracts/addpolicyclassifier.html"
+
+
+class AddPolicyActionView(workflows.WorkflowView):
+    workflow_class = AddPolicyAction
+    template_name = "project/contracts/addpolicyaction.html"
+
+
+class ContractDetailsView(tabs.TabView):
+    #tab_group_class = (EPGDetailsTabs)
+    template_name = 'project/contracts/details_tabs.html'
+
+
+class PolicyRuleDetailsView(tabs.TabView):
+    #tab_group_class = (EPGDetailsTabs)
+    template_name = 'project/contracts/details_tabs.html'
+
+
+class PolicyClassifierDetailsView(tabs.TabView):
+    #tab_group_class = (EPGDetailsTabs)
+    template_name = 'project/contracts/details_tabs.html'
+
+
+class PolicyActionDetailsView(tabs.TabView):
+    #tab_group_class = (EPGDetailsTabs)
+    template_name = 'project/contracts/details_tabs.html'
